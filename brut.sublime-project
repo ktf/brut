@@ -1,0 +1,35 @@
+{
+    "folders":
+    [
+        {
+            "path": ".",
+            "folder_exclude_patterns": ["src", "bin", "tests", "test", "CMakeFiles"],
+            "file_exclude_patterns": ["*.cmake", "CMakeCache.txt", "Makefile"],
+            "name": "config"
+        },
+        {
+            "path": "src",
+            "folder_exclude_patterns": ["backup"]
+        },
+        {
+            "path": "bin",
+            "folder_exclude_patterns": ["backup"]
+        },
+        {
+            "path": "test",
+            "name": "Tests"
+        }
+    ],
+    "settings":
+    {
+        "tab_size": 2,
+        "sublimeclang_enabled": true,
+        "sublimeclang_additional_language_options": {
+          "c++": ["-std=c++0x"]
+        },
+        "sublimeclang_options": [
+            "-I${folder:${project_path:brut.sublime-project}}/src"
+        ]
+    }
+
+}

@@ -1,0 +1,12 @@
+CMakeCache.txt
+CMakeFiles
+obj
+Makefile
+a.out.dSYM
+a.out.dSYM/*/*
+a.out.dSYM/*/*/*
+a.out.dSYM/*/*/*/*
+cmake_install.cmake
+Testing
+CTestTestfile.cmake
+brut.sublime-workspace

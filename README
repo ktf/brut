@@ -1,0 +1,57 @@
+# BRUT : Binary Root UTilities
+
+## ABOUT
+
+BRUT is my own set of utilities to read [ROOT](http://root.cern.ch) files,
+in an extremely lowlevel manner, without using ROOT.
+
+My main purpose (besides understanding how ROOT internals work) is to
+quickly compare two CMSSW files, without bothering about the ROOT
+/ CMSSW specific metadata and without needing ROOT.
+
+## BUILDING
+
+In order to compile you need to have [cmake](cmake.org) installed.
+
+Other dependencies required to build it are
+[libxz](http://www.7-zip.org/sdk.html), [zlib](http://www.zlib.net) and
+[openssl](http://www.openssl.org) (on linux, on mac it uses CommonCrypto which
+comes with Macosx).
+
+Once you have everything in place you can do:
+
+  cmake . && make
+
+and use it directly from the bin/ directory.
+
+## USAGE
+
+`brut` only takes the ROOT file to open as a parameter:
+
+	bin/brut /path/to/some/rootfile.root
+
+This will present a prompt like the following:
+
+	Welcome to Binary Root UTilities shell.
+	Type "help" to list available commands.
+	>
+
+Notice you can simply pipe the commands via stdin.
+
+### listkeys: dumping the list of all keys:
+
+One can dump the list of all TKeys contained in a file with:
+
+		listkeys
+
+### dump: dumping a particular object at a given offset in the file
+
+One can dump the full record of an object in the file via the dump,
+command:
+
+		dump <type> <offset>
+
+where offset is the offset in the file and <type> for the moment can 
+only be:
+
+		dump <type> <offset>
