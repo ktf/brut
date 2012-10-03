@@ -1,0 +1,4 @@
+<bin name="brut" file="brut.cc"/>
+<use name="xz"/>
+<use name="zlib"/>
+<use name="openssl"/>

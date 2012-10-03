@@ -132,7 +132,6 @@ hashKey(char const *buffer, ParserState const &current, std::vector<ParserState>
   unsigned long objSize = getInt(keyHeaderSpec, buffer, "Nbytes")-keySize;
   unsigned long uncompressedSize = getInt(keyHeaderSpec, buffer, "ObjLen");
 
-  size_t keyHeaderSize = specRealSize(keyHeaderSpec, buffer);
   const size_t objectStart = seekKey + keySize;
   char const*objBuffer = buffer + keySize;
   char const*output = objBuffer;
@@ -155,7 +154,6 @@ hashKey(char const *buffer, ParserState const &current, std::vector<ParserState>
 
   unsigned char nameSize = (unsigned char) getChar(keyHeaderSpec, buffer, "Name.size");
   char s[256];
-  assert (nameSize < 256);
   memcpy(s, getString(keyHeaderSpec, buffer, "Name.value"), nameSize);
   s[nameSize] = 0;
   printf("Hash for %s: ", s);
@@ -302,7 +300,7 @@ void
 parseSubDir(char const*buffer, ParserState const &current, std::vector<ParserState> &states, ParserContext &/*context*/)
 {
   size_t subDirStart = current.pos;
-  if (getInt(subDirSpec, buffer, "fSeekDir") != subDirStart)
+  if ((size_t) getInt(subDirSpec, buffer, "fSeekDir") != subDirStart)
   {
     printf("Malformed subdir at %i.\n", (int)subDirStart);
     dump_hex(buffer, subDirStart, getInt(subDirSpec, buffer, "fSeekDir"));
@@ -340,7 +338,7 @@ parseStreamerInfo(char const*buffer, ParserState const &current, std::vector<Par
       printf("---\n");
 
       Object arrayObjClass = aObj.next(TClassSpec);
-      int arraySize = aObj.getInt("ObjectArray.nObjects");
+      size_t arraySize = (size_t) aObj.getInt("ObjectArray.nObjects");
       int lookahead;
       for (size_t j = 0; j < arraySize; ++j)
       {
@@ -765,7 +763,7 @@ main(int argc, char **argv)
             printf("Memory window allocated at %p with size %i at offset %p\n", (void *)readWindow, (int) windowSize, (void*) windowOffset);
         }
         if (debugReads)
-          printf("Offset in mapped buffer %llu\n", state.pos - windowOffset);
+          printf("Offset in mapped buffer %lu\n", state.pos - windowOffset);
         char const*readBuffer = state.buffer ? state.buffer 
                                              : readWindow + state.pos - windowOffset;
         NodeProcessing func = processingFunc(processingSpecs, state.type);
@@ -785,13 +783,22 @@ main(int argc, char **argv)
       try
       {
         char *cp = 0;
+#ifndef __HAVE_READLINE__
+        char stringBuf[256];
+#endif
         if (optCommand)
         {
           states.push_back({0, PREPARE_TO_QUIT, 0});
           cp = optCommand;
         }
         if (!cp)
+        {
+#if __HAVE_READLINE__
           cp  = readline("> ");
+#else
+          cp = fgets(stringBuf, 256, stdin); 
+#endif // __HAVE_READLINE__
+        }
         if (!cp)
           exit(0);
 
@@ -884,7 +891,9 @@ main(int argc, char **argv)
             exit(0);
           break;
         }
+#ifdef __HAVE_READLINE__
         add_history(forHistory);
+#endif // __HAVE_READLINE__
         free(cp);
       }
       catch (char const *str)

@@ -38,7 +38,7 @@ int dump_hex(char const*s, size_t size, size_t offset, int maxlines = -1)
 {
   for (size_t i = 0; i < size; ++i)
   {
-    if ((i/16) > maxlines)
+    if (maxlines >= 0 && (i/16) > (size_t) maxlines)
     {
       printf("\n...\n");
       break;
