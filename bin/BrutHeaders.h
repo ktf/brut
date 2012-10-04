@@ -699,9 +699,8 @@ void printScalar(const FieldSpec *specs, char const *buf)
       snprintf(buffer, 16, "%llu", specs->bigEndian ? bswap_64(*(long long*)buf) : *(long long*)buf);
       break;
     default:
-      char tmp[specs->info.size + 1];
-      memcpy(tmp, buf, specs->info.size);
-      tmp[specs->info.size] = 0;
+      char tmp[16] = {0};
+      memcpy(tmp, buf, specs->info.size < 16 ? specs->info.size : 16);
       snprintf(buffer, 16, "%s", tmp);
   }
   printf("\"%s\": %s", specs->name, buffer);
@@ -834,7 +833,7 @@ char const *doPrintBuf(const FieldSpec *specs,  size_t specOff, char const* buf,
 void printBuf(const FieldSpec *specs, char const* buf, int tabLevel = 0)
 {
   printf("%*s", tabLevel+2, "{\n");
-  char const *next = doPrintBuf(specs, 0, buf, 0, tabLevel+2);
+  doPrintBuf(specs, 0, buf, 0, tabLevel+2);
   printf("%*s", tabLevel+2, "}\n");
 }
 

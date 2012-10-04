@@ -132,11 +132,9 @@ hashKey(char const *buffer, ParserState const &current, std::vector<ParserState>
   unsigned long objSize = getInt(keyHeaderSpec, buffer, "Nbytes")-keySize;
   unsigned long uncompressedSize = getInt(keyHeaderSpec, buffer, "ObjLen");
 
-  const size_t objectStart = seekKey + keySize;
   char const*objBuffer = buffer + keySize;
   char const*output = objBuffer;
   // FIXME: Find a better way to decide if we need to uncompress buffers.
-  size_t size = objSize;
   CompressorFunc compressor = getCompressorFor(compressorSpecs, (unsigned char*)objBuffer );
 
   if (compressor)
@@ -144,7 +142,6 @@ hashKey(char const *buffer, ParserState const &current, std::vector<ParserState>
     output = new char[uncompressedSize];
     int result = compressor((unsigned char*)output, uncompressedSize, 
                                   (unsigned char*)objBuffer, objSize);
-    size = uncompressedSize;
     if (result != Z_OK &&  false)
     {
       printf("\nError while decompressing object: %s (%i)\n", zError(result), result);
@@ -196,7 +193,7 @@ void
 hashFile(char const *buffer, ParserState const &current, std::vector<ParserState> &states, ParserContext &context)
 {
   context.fSeekFree = getInt(fileHeaderSpec, buffer, "fSeekFree");
-  states.push_back({0, IN_STREAM_HASH, getInt(fileHeaderSpec, buffer, "fBEGIN")});            
+  states.push_back({0, IN_STREAM_HASH, (size_t) getInt(fileHeaderSpec, buffer, "fBEGIN")});            
   //states.push_back({0, IN_STREAM_STREAMER_INFO, getInt(fileHeaderSpec, buffer, "fSeekInfo")});
 }
 
@@ -323,10 +320,10 @@ parseStreamerInfo(char const*buffer, ParserState const &current, std::vector<Par
   Object aList(TListSpec, buffer);
   aList.printBuf();
 
-  int nObjects = aList.getInt("nObjects");
+  size_t nObjects = (size_t) aList.getInt("nObjects");
   Object aClass = aList.next(TClassSpec);
 
-  for (size_t i = 0 ; i < 1 ; ++i)
+  for (size_t i = 0 ; i < nObjects ; ++i)
   {
     aClass.printBuf(2);
     char const *className = aClass.getString("Name");
@@ -339,7 +336,6 @@ parseStreamerInfo(char const*buffer, ParserState const &current, std::vector<Par
 
       Object arrayObjClass = aObj.next(TClassSpec);
       size_t arraySize = (size_t) aObj.getInt("ObjectArray.nObjects");
-      int lookahead;
       for (size_t j = 0; j < arraySize; ++j)
       {
         printf("_--- Element %lu, %s\n", j, arrayObjClass.getString("Name"));
@@ -502,7 +498,6 @@ streamStreamerInfo(char const*buffer, ParserState const &current, std::vector<Pa
   unsigned long uncompressedSize = getInt(keyHeaderSpec, buffer, "ObjLen");
   char const*objBuffer = buffer + keySize;
   char const*output = objBuffer;
-  size_t size = objSize;
   CompressorFunc compressor = getCompressorFor(compressorSpecs, (unsigned char*)objBuffer ); 
 
   if (compressor)
@@ -510,7 +505,6 @@ streamStreamerInfo(char const*buffer, ParserState const &current, std::vector<Pa
     output = new char[uncompressedSize];
     int result = compressor((unsigned char*)output, uncompressedSize, 
                                   (unsigned char*)objBuffer, objSize);
-    size = uncompressedSize;
     if (result != Z_OK &&  false)
     {
       printf("\nError while decompressing object: %s (%i)\n", zError(result), result);
@@ -525,7 +519,7 @@ void
 listStreamerInfo(char const *buffer, ParserState const &current, std::vector<ParserState> &states, ParserContext &context)
 {
   context.fSeekFree = getInt(fileHeaderSpec, buffer, "fSeekFree");
-  states.push_back({0, IN_STREAM_STREAMER_INFO, getInt(fileHeaderSpec, buffer, "fSeekInfo")});
+  states.push_back({0, IN_STREAM_STREAMER_INFO, (size_t) getInt(fileHeaderSpec, buffer, "fSeekInfo")});
 }
 
 void
@@ -547,7 +541,7 @@ streamFile(char const *buffer, ParserState const &current, std::vector<ParserSta
   printf("Streaming all the keys for the file\n");
   context.fSeekFree = getInt(fileHeaderSpec, buffer, "fSeekFree");
   // Get all the streamer infos.
-  states.push_back({0, IN_STREAM_KEY, getInt(fileHeaderSpec, buffer, "fBEGIN")});            
+  states.push_back({0, IN_STREAM_KEY, (size_t) getInt(fileHeaderSpec, buffer, "fBEGIN")});            
   //states.push_back({0, IN_STREAM_STREAMER_INFO, getInt(fileHeaderSpec, buffer, "fSeekInfo")});
 }
 
@@ -733,13 +727,13 @@ main(int argc, char **argv)
         if (debugReads)
         { 
           printf("Read requested at position %lu.\n", state.pos);
-          printf("This is inside the window %8p, with subwindow %8p\n", (void *) nextWindow, (void *)nextSubwindow);
+          printf("This is inside the window %#x, with subwindow %#x\n", nextWindow, nextSubwindow);
           if (!readWindow)
             printf("No current window. Creating it.\n");
           else if (currentSubwindow == nextSubwindow)
-            printf("Current window at %8p, subwindow %8p. Same subwindow as before, nothing to do.\n", (void*) currentWindow, (void*) currentSubwindow);
+            printf("Current window at %#x, subwindow %#x. Same subwindow as before, nothing to do.\n", currentWindow, currentSubwindow);
           else
-            printf("Current window at %8p, subwindow %8p. Different subwindow, moving window to be aligned to it.\n", (void*) currentWindow, (void*) currentSubwindow);
+            printf("Current window at %#x, subwindow %#x. Different subwindow, moving window to be aligned to it.\n", currentWindow, currentSubwindow);
         }
 
         if ((readWindow == 0) || (currentSubwindow != nextSubwindow))
@@ -821,13 +815,11 @@ main(int argc, char **argv)
           }
           case STREAM_KEYS:
           {
-            char *filter = strtok(0, " ");
             states.push_back({0, IN_STREAM_FILE, 0});
             break;
           }
           case STREAM_HASHES:
           {
-            char *filter = strtok(0, " ");
             states.push_back({0, IN_HASH_FILE, 0});
             break;
           }
@@ -851,7 +843,7 @@ main(int argc, char **argv)
               break;
             }
             int offset = atoi(seekStr);
-            states.push_back({0, nodeId(nodeSpecs, type), offset});
+            states.push_back({0, nodeId(nodeSpecs, type), (size_t) offset});
             break;
           }
           case SCAN_RANGE:
@@ -866,7 +858,7 @@ main(int argc, char **argv)
               break;
             }
             for (int i = end; i >= begin; --i)
-              states.push_back({0, nodeId(nodeSpecs, type), i});
+              states.push_back({0, nodeId(nodeSpecs, type), (size_t) i});
             break;
           }
           case EXAMINE:
@@ -874,7 +866,7 @@ main(int argc, char **argv)
             int begin, end;
             if (!parseRange(cp, begin, end))
               break;
-            states.push_back({0, IN_RANDOM_RANGE, begin, end-begin});
+            states.push_back({0, IN_RANDOM_RANGE, (size_t)begin, (size_t) end-begin});
             break;
           }
           case HELP:
