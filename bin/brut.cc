@@ -790,7 +790,12 @@ main(int argc, char **argv)
 #if __HAVE_READLINE__
           cp  = readline("> ");
 #else
+          printf("> ");
           cp = fgets(stringBuf, 256, stdin); 
+          if (!cp)
+            exit(0);
+          if (cp[strlen(cp)-1] == '\n')
+            cp[strlen(cp)-1] = 0;
 #endif // __HAVE_READLINE__
         }
         if (!cp)
@@ -885,8 +890,8 @@ main(int argc, char **argv)
         }
 #ifdef __HAVE_READLINE__
         add_history(forHistory);
-#endif // __HAVE_READLINE__
         free(cp);
+#endif // __HAVE_READLINE__
       }
       catch (char const *str)
       {
