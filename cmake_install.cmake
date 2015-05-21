@@ -1,4 +1,4 @@
-# Install script for directory: /Users/eulisse/Dropbox/work/brut
+# Install script for directory: /Users/eulisse/work/brut
 
 # Set the install prefix
 IF(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -33,7 +33,7 @@ ELSE(CMAKE_INSTALL_COMPONENT)
   SET(CMAKE_INSTALL_MANIFEST "install_manifest.txt")
 ENDIF(CMAKE_INSTALL_COMPONENT)
 
-FILE(WRITE "/Users/eulisse/Dropbox/work/brut/${CMAKE_INSTALL_MANIFEST}" "")
+FILE(WRITE "/Users/eulisse/work/brut/${CMAKE_INSTALL_MANIFEST}" "")
 FOREACH(file ${CMAKE_INSTALL_MANIFEST_FILES})
-  FILE(APPEND "/Users/eulisse/Dropbox/work/brut/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
+  FILE(APPEND "/Users/eulisse/work/brut/${CMAKE_INSTALL_MANIFEST}" "${file}\n")
 ENDFOREACH(file)
